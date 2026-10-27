@@ -36,6 +36,11 @@
   body.orbiting #scene{cursor:grabbing}
   body.orbiting{-webkit-user-select:none;user-select:none}
 
+  /* 開場／結尾：左側漸層遮罩 + 文字柔光暈，避免模型延伸到文字區時打架 */
+  #veil{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;
+    background:linear-gradient(90deg,rgba(235,232,225,.94) 0%,rgba(235,232,225,.8) 26%,rgba(235,232,225,.35) 42%,rgba(235,232,225,0) 56%)}
+  .hero-inner,.outro-inner{text-shadow:0 0 1px var(--paper),0 0 12px rgba(235,232,225,.95),0 0 28px rgba(235,232,225,.85)}
+  .cue{text-shadow:0 0 1px var(--paper),0 0 10px rgba(235,232,225,.95)}
   main{position:relative;z-index:1;pointer-events:none}
   .stop{position:relative;min-height:100vh;min-height:100svh;display:flex;align-items:center;padding:0 7vw}
   .stop.ch{height:170vh;height:170svh}
@@ -137,10 +142,16 @@
   .cut-row{display:flex;align-items:center;gap:10px;margin:10px 0 14px}
   .cut-row input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
   .cut-row .val{font-size:12px;color:var(--muted);width:36px;text-align:right}
+  .seg-reset{font:inherit;font-size:11.5px;padding:4px 9px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--muted);cursor:pointer}
   #editor .cut-off .cut-row{display:none}
   .files{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
   .files .btn{width:100%}
   .files .btn.wide{grid-column:1/-1}
+  #pubBtn{width:100%;margin-top:4px}
+  #pubBtn:disabled{opacity:.5;cursor:default}
+  #pubStatus{margin-top:8px;white-space:pre-line}
+  #pubStatus a{color:var(--accent)}
+  .fld span a{color:var(--accent)}
 
   #drop{position:fixed;inset:14px;z-index:9;border:1.5px dashed var(--accent);background:rgba(235,231,223,.88);display:none;place-items:center;font-size:18px;letter-spacing:.1em;color:var(--accent);pointer-events:none}
   body.dragging #drop{display:grid}
@@ -152,6 +163,7 @@
   #toast.show{opacity:1;transform:translate(-50%,0)}
 
   @media (max-width:760px){
+    #veil{background:linear-gradient(0deg,rgba(235,232,225,.94) 0%,rgba(235,232,225,.8) 30%,rgba(235,232,225,.3) 48%,rgba(235,232,225,0) 62%)}
     .stop{padding:0 20px}
     .hero{align-items:flex-end;padding-bottom:calc(96px + env(safe-area-inset-bottom))}
     .hero h1,.outro h2{font-size:clamp(30px,9vw,40px)}
@@ -218,6 +230,7 @@
   </div>
 </header>
 
+<div id="veil"></div>
 <main id="scroll">
   <section class="stop hero" data-stop="hero">
     <div class="hero-inner">
@@ -270,6 +283,7 @@
         <option value="outlet">開關插座：淡化外殼、插座發光</option>
         <option value="pipe">管線：只留管線與機電</option>
         <option value="opening">開口：窗戶強調、空氣粒子、日照移動</option>
+        <option value="structure">結構：只顯示柱（紅）、樑（橘）、樓梯（綠）</option>
       </select>
     </label>
   </div>
@@ -283,6 +297,8 @@
     <button class="btn small" id="edSave" type="button">儲存此視角</button>
     <button class="btn small ghost" id="edReset" type="button">改回自動取景</button>
   </div>
+  <p class="hint small">視角（透視強度）：數字大像廣角、空間感強；數字小像長鏡頭、畫面較平。</p>
+  <div class="cut-row"><input type="range" id="fovPos" min="15" max="80" value="35"><span class="val" id="fovVal">35°</span><button class="seg-reset" id="fovReset" type="button" title="回到預設 35°">預設</button></div>
 
   <div class="lay-head"><h4>圖層顯示<small id="layCount"></small></h4><button id="layClear" type="button">全部預設</button></div>
   <p class="hint small">強制顯示、變透明或隱藏某些圖層；「預設」照效果樣式的分組規則。</p>
@@ -301,6 +317,15 @@
     <label class="btn small ghost" style="text-align:center">匯入設定（JSON）<input type="file" id="imJson" accept=".json,application/json" hidden></label>
     <button class="btn small ghost wide" id="exRevert" type="button">放棄草稿，回到檔案內容</button>
   </div>
+
+  <div class="lay-head"><h4>發佈到作品集網站</h4></div>
+  <p class="hint small">直接上傳到 GitHub 的 portfolio repo 並更新首頁清單，約一分鐘後網站更新。第一次要貼一把 GitHub token（只存在這台電腦的瀏覽器，不會進入匯出檔）。</p>
+  <label class="fld"><span>資料夾名稱（成為網址的一段；英數與連字號）</span><input id="fFolder" type="text" placeholder="例如 taichung-01" autocomplete="off"></label>
+  <label class="fld"><span>首頁卡片：案名</span><input id="fPubTitle" type="text"></label>
+  <label class="fld"><span>首頁卡片：一句說明</span><input id="fPubDesc" type="text"></label>
+  <label class="fld"><span>GitHub token（<a href="https://github.com/settings/tokens/new?scopes=repo&description=portfolio" target="_blank" rel="noopener">建立</a>：classic、勾 repo）</span><input id="fToken" type="password" placeholder="ghp_… 或 github_pat_…" autocomplete="off"></label>
+  <button class="btn small wide" id="pubBtn" type="button">發佈到網站</button>
+  <p class="hint small" id="pubStatus"></p>
 </div>
 
 <div id="drop"><div>放開以載入 .glb 模型</div></div>
@@ -322,7 +347,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 /* ════════════════════════════════════════════
    專案內容（由編輯面板維護；匯出時整段被取代）
    ════════════════════════════════════════════ */
-/*PROJECT-START*/const PROJECT_BAKED = {"id": "4f70yshstp", "brand": "建築細節導覽", "modelUrl": "", "northOffsetDeg": 0, "hero": {"eyebrow": "南投名間 住宅", "title": "從細節開始的建築", "sub": "向下滾動，看見設計裡被仔細安排的四件事。", "cam": {"pos": [37.364, 6.573, 1.119], "target": [-2.17, 5.125, -0.148]}, "layers": {}, "cut": null}, "scenes": [{"id": "tile", "short": "磁磚", "title": "細節藏在磁磚裡", "body": "我們從磁磚開始進行設計，讓整座建築的鋪面可以為整磚。", "effect": "tile", "cam": {"pos": [6.174, 11.873, 9.238], "target": [-3.269, 5.5, 1.903]}, "layers": {"10 00 | 柱": "hide", "100 02 | 板 | 室內地磚分割": "show", "100 03 | 樑 | 屋頂樑": "hide", "100 05 | 天溝 (平面可見)": "hide", "100 06 | 金屬屋頂 (結構3D不可見)": "hide", "100 07 | 室內粉刷": "hide", "100 07 | 室內粉刷倒吊 (平面不可見)": "hide", "100 11 | 柱 | 圍牆": "hide", "11 00 | 樑": "hide", "11 02 | 樑 | 增築": "hide", "12 00 | 板 | 結構": "hide", "12 01 | 板 | 覆蓋": "hide", "12 02 | 板 | 天花板": "hide", "12 05 | 板 | 倒吊板(平面可見)": "hide", "12 06 | 板 | 倒吊牆板(平面不可見)": "hide", "13 00 | 牆 | RC牆": "hide", "13 01 | 牆 | RC牆 (不相交)": "hide", "13 04 | 牆 | 外觀粉刷": "hide", "13 07 | 牆 | 石材、鋁包": "hide", "13 08 | 牆 | 圍牆": "hide", "14 00 | 樓梯": "hide", "15 00 | 網面 |地形": "hide", "15 02 | 網面 | 道路": "hide", "16 03 | 收邊條、滴水條": "hide", "16 03 | 收邊條、滴水條(不相交)": "hide", "16 04 | 欄杆 | 2D、3D可見": "hide", "17 01 | 家具 | 衛浴": "hide", "17 02 | 停車位": "hide", "21 02 | 標註 |一般": "hide", "90 00 | 機電設備": "hide", "92 00 | 排水 | SP 汙水排水管": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "92 03 | 排水 | RP 雨排": "hide", "92 05 | 排水 | AP 空調排水": "hide", "92 06 | 排水 | 設備(落水頭)": "hide", "93 01 | 電力 | 終端設備": "hide", "93 02 | 電力 | 燈具": "hide", "96 00 | 空調 | 設備": "hide"}, "cut": null}, {"id": "pipe", "short": "管線", "title": "五大管線檢討", "body": "使用3D建模檢討機電管線，施工現場減少錯誤發生。", "effect": "pipe", "cam": {"pos": [25.724, 14.056, -8.253], "target": [1.994, 4.693, -0.037]}, "layers": {}, "cut": null}, {"id": "dr79cisv28", "short": "冷氣", "title": "冷氣規劃", "body": "合理規劃室內機與室外機位置，維護立面外觀與室內空間品質", "effect": "pipe", "cam": {"pos": [13.943, 5.666, 14.941], "target": [1.998, 4.693, -0.039]}, "layers": {"93 02 | 電力 | 燈具": "hide", "93 01 | 電力 | 終端設備": "hide", "92 06 | 排水 | 設備(落水頭)": "hide", "92 05 | 排水 | AP 空調排水": "show", "92 03 | 排水 | RP 雨排": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "92 00 | 排水 | SP 汙水排水管": "hide", "90 00 | 機電設備": "hide"}, "cut": null}, {"id": "46wrrevhf3", "short": "浴室", "title": "糞管檢討", "body": "精準設計糞管位置，施工不怕空間不夠", "effect": "pipe", "cam": {"pos": [-6.932, 4.541, -7.394], "target": [0.526, 4.198, -0.602]}, "layers": {"93 02 | 電力 | 燈具": "hide", "96 00 | 空調 | 設備": "hide", "92 05 | 排水 | AP 空調排水": "hide", "92 03 | 排水 | RP 雨排": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "17 01 | 家具 | 衛浴": "show"}, "cut": null}, {"id": "9lgkte3o47", "short": "天溝", "title": "天溝設計", "body": "讓雨水排水成為一場被設計過的藝術", "effect": "none", "cam": {"pos": [13.692, 8.23, 8.165], "target": [12.618, 7.017, 6.134]}, "layers": {}, "cut": null}, {"id": "opening", "short": "開口", "title": "呼吸得到新鮮空氣，享受每吋陽光", "body": "反覆雕琢建築物與環境之間的關係，反覆雕琢建築物的每一道開口。", "effect": "opening", "cam": {"pos": [35.098, 13.622, -15.641], "target": [4.027, 5.449, 0.489]}, "layers": {}, "cut": null}], "outro": {"title": "每一個細節，都為了生活", "sub": "", "cam": {"pos": [73.387, 39.851, -27.241], "target": [-2.166, 5.125, -0.148]}, "layers": {}, "cut": null}, "homeUrl": "../"};/*PROJECT-END*/
+/*PROJECT-START*/const PROJECT_BAKED = {"id": "mn9cel85wx", "brand": "建築細節導覽", "modelUrl": "", "homeUrl": "../", "northOffsetDeg": 0, "hero": {"eyebrow": "南投名間 住宅", "title": "從細節開始的建築", "sub": "向下滾動，看見設計裡被仔細安排的四件事。", "cam": {"pos": [37.364, 6.573, 1.119], "target": [-2.17, 5.125, -0.148]}, "layers": {}, "cut": null, "fov": null}, "scenes": [{"id": "tile", "short": "磁磚", "title": "細節藏在磁磚裡", "body": "我們從磁磚開始進行設計，讓整座建築的鋪面可以為整磚。", "effect": "tile", "cam": {"pos": [6.174, 11.873, 9.238], "target": [-3.269, 5.5, 1.903]}, "layers": {"10 00 | 柱": "hide", "100 02 | 板 | 室內地磚分割": "show", "100 03 | 樑 | 屋頂樑": "hide", "100 05 | 天溝 (平面可見)": "hide", "100 06 | 金屬屋頂 (結構3D不可見)": "hide", "100 07 | 室內粉刷": "hide", "100 07 | 室內粉刷倒吊 (平面不可見)": "hide", "100 11 | 柱 | 圍牆": "hide", "11 00 | 樑": "hide", "11 02 | 樑 | 增築": "hide", "12 00 | 板 | 結構": "hide", "12 01 | 板 | 覆蓋": "hide", "12 02 | 板 | 天花板": "hide", "12 05 | 板 | 倒吊板(平面可見)": "hide", "12 06 | 板 | 倒吊牆板(平面不可見)": "hide", "13 00 | 牆 | RC牆": "hide", "13 01 | 牆 | RC牆 (不相交)": "hide", "13 04 | 牆 | 外觀粉刷": "hide", "13 07 | 牆 | 石材、鋁包": "hide", "13 08 | 牆 | 圍牆": "hide", "14 00 | 樓梯": "hide", "15 00 | 網面 |地形": "hide", "15 02 | 網面 | 道路": "hide", "16 03 | 收邊條、滴水條": "hide", "16 03 | 收邊條、滴水條(不相交)": "hide", "16 04 | 欄杆 | 2D、3D可見": "hide", "17 01 | 家具 | 衛浴": "hide", "17 02 | 停車位": "hide", "21 02 | 標註 |一般": "hide", "90 00 | 機電設備": "hide", "92 00 | 排水 | SP 汙水排水管": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "92 03 | 排水 | RP 雨排": "hide", "92 05 | 排水 | AP 空調排水": "hide", "92 06 | 排水 | 設備(落水頭)": "hide", "93 01 | 電力 | 終端設備": "hide", "93 02 | 電力 | 燈具": "hide", "96 00 | 空調 | 設備": "hide"}, "cut": null, "fov": null}, {"id": "pipe", "short": "管線", "title": "五大管線檢討", "body": "使用3D建模檢討機電管線，施工現場減少錯誤發生。", "effect": "pipe", "cam": {"pos": [25.724, 14.056, -8.253], "target": [1.994, 4.693, -0.037]}, "layers": {}, "cut": null, "fov": null}, {"id": "dr79cisv28", "short": "冷氣", "title": "冷氣規劃", "body": "合理規劃室內機與室外機位置，維護立面外觀與室內空間品質", "effect": "pipe", "cam": {"pos": [13.943, 5.666, 14.941], "target": [1.998, 4.693, -0.039]}, "layers": {"93 02 | 電力 | 燈具": "hide", "93 01 | 電力 | 終端設備": "hide", "92 06 | 排水 | 設備(落水頭)": "hide", "92 05 | 排水 | AP 空調排水": "show", "92 03 | 排水 | RP 雨排": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "92 00 | 排水 | SP 汙水排水管": "hide", "90 00 | 機電設備": "hide"}, "cut": null, "fov": null}, {"id": "46wrrevhf3", "short": "浴室", "title": "糞管檢討", "body": "精準設計糞管位置，施工不怕空間不夠", "effect": "pipe", "cam": {"pos": [-6.932, 4.541, -7.394], "target": [0.526, 4.198, -0.602]}, "layers": {"93 02 | 電力 | 燈具": "hide", "96 00 | 空調 | 設備": "hide", "92 05 | 排水 | AP 空調排水": "hide", "92 03 | 排水 | RP 雨排": "hide", "92 01 | 排水 | WP 生活雜排": "hide", "17 01 | 家具 | 衛浴": "show"}, "cut": null, "fov": null}, {"id": "9lgkte3o47", "short": "天溝", "title": "天溝設計", "body": "讓雨水排水成為一場被設計過的藝術", "effect": "none", "cam": {"pos": [13.692, 8.23, 8.165], "target": [12.618, 7.017, 6.134]}, "layers": {}, "cut": null, "fov": null}, {"id": "opening", "short": "開口", "title": "呼吸得到新鮮空氣，享受每吋陽光", "body": "反覆雕琢建築物與環境之間的關係，反覆雕琢建築物的每一道開口。", "effect": "opening", "cam": {"pos": [35.098, 13.622, -15.641], "target": [4.027, 5.449, 0.489]}, "layers": {}, "cut": null, "fov": null}], "outro": {"title": "每一個細節，都為了生活", "sub": "", "cam": {"pos": [73.387, 39.851, -27.241], "target": [-2.166, 5.125, -0.148]}, "layers": {}, "cut": null, "fov": null}, "publish": {"folder": "nantou-1230", "title": "南投名間 住宅", "desc": "從磁磚、管線到每一道開口，細節從設計之初就被安排好。"}};/*PROJECT-END*/
 /*MODE-START*/const EXPORTED = true;/*MODE-END*/   // 匯出的作品集為 true：預設隱藏工具，加 ?edit 才顯示
 
 // 依物件／圖層／材質名稱判斷分組（不分大小寫，包含即算）；效果樣式用
@@ -334,6 +359,9 @@ const KEYWORDS = {
   glass:    ['玻璃', '窗', 'glass', 'glazing', 'window', 'curtain'],
   interior: ['隔間', '室內', '家具', '衛浴', '天花', 'partition', 'interior'],
   site:     ['植栽', '景觀', '地形', '道路', '停車', '圍牆', 'tree', 'plant', 'landscape'],
+  column:   ['柱', 'column', 'pillar'],
+  beam:     ['樑', '梁', 'beam'],
+  stair:    ['樓梯', 'stair'],
 };
 const LAYER_FADE = .08;   // 圖層「透明」時的不透明度
 const MODE_OP = { show: 1, fade: LAYER_FADE, hide: 0 };
@@ -341,12 +369,19 @@ const MODE_OP = { show: 1, fade: LAYER_FADE, hide: 0 };
 /* ════════════════════════════════════════════
    效果樣式：各分組的透明度、強調、氣流，與自動取景
    ════════════════════════════════════════════ */
-const GROUPS = ['shell', 'interior', 'tile', 'outlet', 'pipe', 'glass', 'site'];
-const S = (op = {}, hl = {}, ex = {}) => ({
-  op: { shell: 1, interior: 1, tile: 1, outlet: 1, pipe: 0, glass: 1, site: 1, ...op },
-  hl: { shell: 0, interior: 0, tile: 0, outlet: 0, pipe: 0, glass: 0, site: 0, ...hl },
-  air: 0, sway: 0, ...ex,
-});
+const GROUPS = ['shell', 'interior', 'tile', 'outlet', 'pipe', 'glass', 'site', 'column', 'beam', 'stair'];
+// 結構樣式的著色：柱紅、樑橘、樓梯綠
+const TINT = { column: new THREE.Color('#c9382c'), beam: new THREE.Color('#e3892b'), stair: new THREE.Color('#3f9d5f') };
+const S = (op = {}, hl = {}, ex = {}) => {
+  const sh = op.shell === undefined ? 1 : op.shell;   // 柱樑樓梯沒特別指定時，跟外殼一樣
+  const { tw = {}, ...rest } = ex;
+  return {
+    op: { shell: 1, interior: 1, tile: 1, outlet: 1, pipe: 0, glass: 1, site: 1, column: sh, beam: sh, stair: sh, ...op },
+    hl: { shell: 0, interior: 0, tile: 0, outlet: 0, pipe: 0, glass: 0, site: 0, column: 0, beam: 0, stair: 0, ...hl },
+    tw: { column: 0, beam: 0, stair: 0, ...tw },        // 著色強度（只有結構樣式用）
+    air: 0, sway: 0, ...rest,
+  };
+};
 const EFFECTS = {
   frame:   S({}, {}, { sway: 1 }),   // 開場／結尾
   none:    S(),
@@ -354,6 +389,7 @@ const EFFECTS = {
   outlet:  S({ shell: .06, glass: .03, site: .15 }, { outlet: .85 }),
   pipe:    S({ shell: .05, interior: .05, tile: .22, outlet: .08, pipe: 1, glass: .02, site: .1 }, { pipe: .1 }),
   opening: S({}, { glass: .2 }, { air: 1 }),
+  structure: S({ shell: 0, interior: 0, tile: 0, outlet: 0, pipe: 0, glass: 0, site: 0, column: 1, beam: 1, stair: 1 }, {}, { tw: { column: 1, beam: 1, stair: 1 } }),
 };
 const VIEWS = {
   hero:    { focus: 'all',    dir: [1.15, .72, 1.45], pad: 1.0 },
@@ -362,6 +398,7 @@ const VIEWS = {
   outlet:  { focus: 'outlet', dir: [.18, .16, 1],     pad: .95, minSize: 3 },
   pipe:    { focus: 'pipe',   dir: [.75, -.1, .85],   pad: .62 },
   opening: { focus: 'glass',  dir: [.35, .18, 1],     pad: .72 },
+  structure: { focus: 'all',  dir: [1.0, .9, 1.25],   pad: .9 },
   outro:   { focus: 'all',    dir: [-1.25, .62, 1.2], pad: 1.05 },
 };
 
@@ -372,7 +409,8 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const uid = () => Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
 const draftKey = () => 'arch-portfolio:' + PROJECT.id;
 function normalizeProject(p) {
-  const view = v => ({ cam: v && v.cam && v.cam.pos && v.cam.target ? { pos: v.cam.pos, target: v.cam.target } : null, layers: (v && v.layers) || {}, cut: (v && v.cut) || null });
+  const view = v => ({ cam: v && v.cam && v.cam.pos && v.cam.target ? { pos: v.cam.pos, target: v.cam.target } : null, layers: (v && v.layers) || {}, cut: (v && v.cut) || null,
+    fov: v && +v.fov > 0 ? Math.min(80, Math.max(15, +v.fov)) : null });   // 視角（度），null＝預設
   const out = {
     id: String(p.id || 'template'),
     brand: String(p.brand || ''),
@@ -385,6 +423,7 @@ function normalizeProject(p) {
       effect: EFFECTS[s.effect] && s.effect !== 'frame' ? s.effect : 'none', ...view(s),
     })),
     outro: { title: String((p.outro || {}).title || ''), sub: String((p.outro || {}).sub || ''), ...view(p.outro) },
+    publish: { folder: String((p.publish || {}).folder || ''), title: String((p.publish || {}).title || ''), desc: String((p.publish || {}).desc || '') },
   };
   return out;
 }
@@ -506,7 +545,9 @@ scene.fog = new THREE.Fog(BG, 60, 160);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
 
-const camera = new THREE.PerspectiveCamera(35, innerWidth / innerHeight, .05, 800);
+const DEFAULT_FOV = 35;
+const camera = new THREE.PerspectiveCamera(DEFAULT_FOV, innerWidth / innerHeight, .05, 800);
+const fovOf = s => (s && s.ref.fov) || DEFAULT_FOV;
 const controls = new OrbitControls(camera, canvas);
 controls.enabled = false;
 controls.enableDamping = true;
@@ -574,7 +615,7 @@ function classify(obj) {
   const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
   mats.forEach(m => names.push((m && m.name) || ''));
   const s = names.join(' ').toLowerCase();
-  for (const g of ['pipe', 'outlet', 'tile', 'glass', 'interior', 'site']) {
+  for (const g of ['pipe', 'outlet', 'tile', 'glass', 'interior', 'site', 'column', 'beam', 'stair']) {
     if (KEYWORDS[g].some(w => s.includes(w.toLowerCase()))) return g;
   }
   return 'shell';
@@ -598,6 +639,8 @@ function register(root) {
       c.userData.layer = layer;
       c.userData.baseOpacity = m.opacity;
       c.userData.alwaysT = m.transparent;
+      c.userData.baseColor = c.color ? c.color.clone() : null;
+      c.userData.baseMap = c.map || null;
       if (c.emissive) c.userData.baseEmissive = c.emissive.clone();
       if ('envMapIntensity' in c) c.envMapIntensity = .7;
       cache.set(key, c);
@@ -737,7 +780,7 @@ function frameStop(i) {
   }
   const c = box.getCenter(new V3());
   const r = Math.max(box.getSize(new V3()).length() / 2, 1);
-  const vHalf = THREE.MathUtils.degToRad(camera.fov / 2);
+  const vHalf = THREE.MathUtils.degToRad(fovOf(s) / 2);
   const usable = innerWidth > 760 ? .6 : 1; // 桌機左側被文字卡片佔用，只用右側約六成畫面取景
   const hHalf = Math.atan(Math.tan(vHalf) * camera.aspect * usable);
   const dist = r / Math.sin(Math.min(vHalf, hHalf)) * v.pad * (innerWidth > 760 ? 1 : .88); // 手機螢幕窄，拉近一點
@@ -749,12 +792,14 @@ function frameStop(i) {
 function rebuildKeys() {
   keys = stops.map((s, i) => {
     const o = isDemo ? null : s.ref.cam;   // 示意模型尺寸不同，不套用存好的鏡頭
-    return o && o.pos && o.target
+    const k = o && o.pos && o.target
       ? { pos: new V3().fromArray(o.pos), target: new V3().fromArray(o.target) }
       : frameStop(i);
+    k.fov = fovOf(s);
+    return k;
   });
 }
-const cloneKey = k => ({ pos: k.pos.clone(), target: k.target.clone() });
+const cloneKey = k => ({ pos: k.pos.clone(), target: k.target.clone(), fov: k.fov });
 
 function rebuildLayers() {
   layerStates = stops.map(s => {
@@ -1068,7 +1113,9 @@ const smoothstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t
 
 function lerpState(a, b, t) {
   const o = { op: {}, hl: {}, air: L(a.air, b.air, t), sway: L(a.sway, b.sway, t), lay: {} };
+  o.tw = {};
   for (const g of GROUPS) { o.op[g] = L(a.op[g], b.op[g], t); o.hl[g] = L(a.hl[g], b.hl[g], t); }
+  for (const g in TINT) o.tw[g] = L((a.tw && a.tw[g]) || 0, (b.tw && b.tw[g]) || 0, t);
   // 圖層設定以權重 w 混合：沒設定視為 w=0，場景之間才會平滑過渡
   const la = a.lay || {}, lb = b.lay || {};
   for (const n of new Set([...Object.keys(la), ...Object.keys(lb)])) {
@@ -1098,6 +1145,13 @@ function applyState(st, time) {
       m.opacity = o;
       m.depthWrite = !m.userData.alwaysT && o > .6;
       if (m.userData.baseEmissive) m.emissive.copy(m.userData.baseEmissive).lerp(ACCENT, hl);
+      if (TINT[g] && m.userData.baseColor) {   // 結構樣式：顏色往指定色靠，著色過半時暫時拿掉貼圖讓顏色乾淨
+        const tw = (st.tw && st.tw[g]) || 0;
+        m.color.copy(m.userData.baseColor);
+        if (tw > .002) m.color.lerp(TINT[g], tw);
+        const wantMap = tw > .5 ? null : m.userData.baseMap;
+        if (m.map !== wantMap) { m.map = wantMap; m.needsUpdate = true; }
+      }
     }
     for (const o of groupObjs[g]) {
       const eo = layerOp(st.lay, o.userData.layer, op);
@@ -1209,6 +1263,10 @@ function refreshFields() {
   $('fBrand').value = PROJECT.brand;
   $('fEyebrow').value = PROJECT.hero.eyebrow;
   $('fHome').value = PROJECT.homeUrl;
+  $('fFolder').value = PROJECT.publish.folder;
+  $('fPubTitle').value = PROJECT.publish.title;
+  $('fPubDesc').value = PROJECT.publish.desc;
+  $('fToken').value = loadToken();
   $('fHeroTitle').value = PROJECT.hero.title;
   $('fHeroSub').value = PROJECT.hero.sub;
   $('fOutroTitle').value = PROJECT.outro.title;
@@ -1219,6 +1277,7 @@ function refreshFields() {
     $('fBody').value = s.ref.body;
     $('fEffect').value = s.ref.effect || 'none';
   }
+  $('fovPos').value = fovOf(s); $('fovVal').textContent = fovOf(s) + '°';
   $('edReset').disabled = !s.ref.cam;
   $('edReset').style.opacity = s.ref.cam ? '' : '.45';
   $('scUp').disabled = editIdx <= 1;
@@ -1236,6 +1295,9 @@ const bindText = (id, apply) => $(id).addEventListener('input', () => { apply($(
 bindText('fBrand', v => { PROJECT.brand = v; renderStatic(); });
 bindText('fEyebrow', v => { PROJECT.hero.eyebrow = v; renderStatic(); });
 bindText('fHome', v => { PROJECT.homeUrl = v.trim(); renderStatic(); });
+bindText('fFolder', v => { PROJECT.publish.folder = v.trim(); });
+bindText('fPubTitle', v => { PROJECT.publish.title = v; });
+bindText('fPubDesc', v => { PROJECT.publish.desc = v; });
 bindText('fHeroTitle', v => { PROJECT.hero.title = v; renderStatic(); });
 bindText('fHeroSub', v => { PROJECT.hero.sub = v; renderStatic(); });
 bindText('fOutroTitle', v => { PROJECT.outro.title = v; renderStatic(); });
@@ -1315,6 +1377,17 @@ $('edSave').addEventListener('click', () => {
   stops[editIdx].ref.cam = { pos: r3(camera.position), target: r3(controls.target) };
   rebuildAll(); refreshFields(); saveDraft();
   toast(`已儲存「${stopLabel(stops[editIdx])}」的視角`);
+});
+$('fovPos').addEventListener('input', () => {
+  stops[editIdx].ref.fov = +$('fovPos').value;
+  $('fovVal').textContent = $('fovPos').value + '°';
+  rebuildAll(); saveDraft();
+  if (!stops[editIdx].ref.cam) editFly = cloneKey(keys[editIdx]);   // 自動取景的場景：跟著飛到新的取景位置
+});
+$('fovReset').addEventListener('click', () => {
+  stops[editIdx].ref.fov = null;
+  rebuildAll(); refreshFields(); saveDraft();
+  if (!stops[editIdx].ref.cam) editFly = cloneKey(keys[editIdx]);
 });
 $('edReset').addEventListener('click', () => {
   stops[editIdx].ref.cam = null;
@@ -1463,8 +1536,7 @@ function bytesToB64(buf) {
 // 以 JSON 寫進 script 標籤時，避免字串裡出現 script 結束標籤或 U+2028/2029 破壞語法（本檔內任何地方都不能出現字面上的 script 結束標籤）
 const jsSafe = s => s.split('</').join('<\\/').split(String.fromCharCode(0x2028)).join('\\u2028').split(String.fromCharCode(0x2029)).join('\\u2029');
 
-$('exHtml').addEventListener('click', () => {
-  if (isDemo) { toast('請先載入模型再匯出'); return; }
+function buildExport() {
   const proj = clone(PROJECT);
   proj.id = uid();          // 匯出的檔案是新的專案，草稿不互相干擾
   proj.modelUrl = '';       // 匯出檔只用內嵌模型
@@ -1474,9 +1546,85 @@ $('exHtml').addEventListener('click', () => {
   const embed = modelBytes ? `<script id="embed">window.EMBEDDED_GLB=${jsSafe(JSON.stringify({ name: modelName, b64: bytesToB64(modelBytes) }))};<\/script>` : '<script id="embed"><\/script>';
   html = html.replace(/<script id="embed"[^>]*>[\s\S]*?<\/script>/, () => embed);
   html = html.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${PROJECT.brand.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</title>`);
+  return html;
+}
+$('exHtml').addEventListener('click', () => {
+  if (isDemo) { toast('請先載入模型再匯出'); return; }
+  const html = buildExport();
   download(safeName(PROJECT.brand) + '.html', new Blob([html], { type: 'text/html' }));
   toast('已匯出作品集 HTML（約 ' + Math.round(html.length / 1048576) + ' MB）');
 });
+
+/* ── 發佈到作品集網站（GitHub Contents API） ── */
+const PUBLISH = { repo: '44313-architects/portfolio', branch: 'main', site: 'https://44313-architects.github.io/portfolio/' };
+const tokenKey = 'arch-portfolio:gh-token';
+const loadToken = () => { try { return localStorage.getItem(tokenKey) || ''; } catch (e) { return ''; } };
+const utf8ToB64 = str => bytesToB64(new TextEncoder().encode(str).buffer);
+const b64ToUtf8 = b64 => { const bin = atob(b64.replace(/\s/g, '')); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new TextDecoder().decode(u8); };
+const pubStatus = (msg, link) => {
+  const el = $('pubStatus');
+  el.textContent = msg;
+  if (link) { const a = document.createElement('a'); a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = link; el.append('\n', a); }
+};
+async function gh(path, opt = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    ...opt,
+    headers: { Authorization: 'Bearer ' + loadToken(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opt.headers || {}) },
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* 沒有內容 */ }
+  if (!res.ok) {
+    const why = res.status === 401 ? 'token 無效或已過期' : res.status === 403 ? '沒有權限（token 要能寫入這個 repo）' : res.status === 404 ? '找不到（repo 名稱或 token 權限）' : (data && data.message) || res.status;
+    throw new Error(`GitHub 回應 ${res.status}：${why}`);
+  }
+  return data;
+}
+// 首頁 index.html 的 PROJECTS 清單：新增或更新一行
+function upsertLanding(src, folder, title, desc) {
+  const q = v => "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+  const line = `  { folder: ${q(folder)}, title: ${q(title)}, desc: ${q(desc)} },`;
+  const re = new RegExp(`^[ \\t]*\\{\\s*folder:\\s*'${folder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'.*$`, 'm');
+  if (re.test(src)) return src.replace(re, line);
+  const end = src.indexOf('\n];', src.indexOf('const PROJECTS = ['));
+  if (end < 0) throw new Error('首頁 index.html 裡找不到 PROJECTS 清單');
+  return src.slice(0, end) + '\n' + line + src.slice(end);
+}
+async function publishToSite() {
+  const pub = PROJECT.publish;
+  if (isDemo) { toast('請先載入模型'); return; }
+  if (!/^[a-z0-9][a-z0-9-]*$/i.test(pub.folder)) { pubStatus('資料夾名稱只能用英數與連字號，例如 taichung-01'); return; }
+  if (!loadToken()) { pubStatus('請先貼上 GitHub token'); return; }
+  const title = pub.title || PROJECT.hero.eyebrow || PROJECT.brand;
+  const btn = $('pubBtn');
+  btn.disabled = true;
+  try {
+    pubStatus('準備檔案…');
+    await new Promise(r => setTimeout(r, 30));
+    const html = buildExport();
+    const mb = html.length / 1048576;
+    if (mb > 70) throw new Error(`檔案約 ${Math.round(mb)} MB，超過 GitHub API 能上傳的大小（約 70 MB），請用「匯出作品集」再以 git 上傳`);
+    pubStatus('讀取 repo…');
+    const tree = await gh(`/repos/${PUBLISH.repo}/git/trees/${PUBLISH.branch}?recursive=1`);
+    const shaOf = path => { const n = (tree.tree || []).find(t => t.path === path); return n ? n.sha : undefined; };
+    const path = `${pub.folder}/index.html`;
+    const existed = !!shaOf(path);
+    pubStatus(`上傳作品集（約 ${Math.round(mb)} MB）…`);
+    await gh(`/repos/${PUBLISH.repo}/contents/${path}`, { method: 'PUT', body: JSON.stringify({ message: `${existed ? '更新' : '新增'}作品集：${title}（${pub.folder}）`, content: utf8ToB64(html), branch: PUBLISH.branch, sha: shaOf(path) }) });
+    pubStatus('更新首頁清單…');
+    const landing = await gh(`/repos/${PUBLISH.repo}/contents/index.html?ref=${PUBLISH.branch}`);
+    const src = b64ToUtf8(landing.content);
+    const next = upsertLanding(src, pub.folder, title, pub.desc);
+    if (next !== src) await gh(`/repos/${PUBLISH.repo}/contents/index.html`, { method: 'PUT', body: JSON.stringify({ message: `首頁清單：${title}`, content: utf8ToB64(next), branch: PUBLISH.branch, sha: landing.sha }) });
+    const url = PUBLISH.site + pub.folder + '/';
+    pubStatus(`已${existed ? '更新' : '新增'}，約一分鐘後生效：`, url);
+    toast('發佈完成');
+  } catch (e) {
+    console.error(e);
+    pubStatus('發佈失敗：' + e.message);
+  } finally { btn.disabled = false; }
+}
+$('pubBtn').addEventListener('click', publishToSite);
+$('fToken').addEventListener('change', () => { try { localStorage.setItem(tokenKey, $('fToken').value.trim()); } catch (e) { /* 略過 */ } });
 $('exJson').addEventListener('click', () => {
   download(safeName(PROJECT.brand) + '.json', new Blob([JSON.stringify(PROJECT, null, 2)], { type: 'application/json' }));
   toast('已匯出設定 JSON');
@@ -1522,7 +1670,17 @@ addEventListener('resize', onResize);
 const clock = new THREE.Clock();
 const camTarget = new V3();
 const tmpPos = new V3(), tmpTgt = new V3(), tmpOff = new V3();
-let kSmooth = 0;
+let kSmooth = 0, fovSmooth = DEFAULT_FOV, veilSmooth = 1;
+const veilEl = $('veil');
+const isFrame = s => s && s.type !== 'scene';
+function applyVeil(target, a) {
+  veilSmooth += (target - veilSmooth) * a;
+  veilEl.style.opacity = veilSmooth.toFixed(3);
+}
+function applyFov(target, a) {
+  fovSmooth += (target - fovSmooth) * a;
+  if (Math.abs(camera.fov - fovSmooth) > .01) { camera.fov = fovSmooth; camera.updateProjectionMatrix(); }
+}
 
 /* ── 滑鼠／手指拖曳旋轉（一般瀏覽模式） ── */
 const camBase = new V3();
@@ -1571,6 +1729,8 @@ function tick(ts, forcedDt) {   // forcedDt 只給除錯用的 __pf.step 使用
       if (camera.position.distanceTo(editFly.pos) < .02) editFly = null;
     }
     controls.update();
+    applyFov(fovOf(stops[editIdx]), a);
+    applyVeil(isFrame(stops[editIdx]) ? 1 : 0, a);
     camTarget.copy(controls.target);
     kSmooth += (editIdx - kSmooth) * a;
     setActiveCard(editIdx >= 1 && editIdx <= PROJECT.scenes.length ? editIdx : -1, 1);
@@ -1588,6 +1748,8 @@ function tick(ts, forcedDt) {   // forcedDt 只給除錯用的 __pf.step 使用
     if (sw) { tmpOff.subVectors(tmpPos, tmpTgt).applyAxisAngle(UP, sw); tmpPos.copy(tmpTgt).add(tmpOff); }
     camBase.lerp(tmpPos, a);
     camTarget.lerp(tmpTgt, a);
+    applyFov(L(A.fov, B.fov, te), a);
+    applyVeil(L(isFrame(stops[i]) ? 1 : 0, isFrame(stops[i + 1]) ? 1 : 0, te), a);
 
     // 拖曳旋轉：放開後保持角度，再次捲動時慢慢回到場景視角
     if (!orbit.drag && Math.abs(k - orbit.k) > .06) { orbit.yawT = 0; orbit.pitchT = 0; }
