@@ -147,6 +147,11 @@
   .files{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
   .files .btn{width:100%}
   .files .btn.wide{grid-column:1/-1}
+  #pubBtn{width:100%;margin-top:4px}
+  #pubBtn:disabled{opacity:.5;cursor:default}
+  #pubStatus{margin-top:8px;white-space:pre-line}
+  #pubStatus a{color:var(--accent)}
+  .fld span a{color:var(--accent)}
 
   #drop{position:fixed;inset:14px;z-index:9;border:1.5px dashed var(--accent);background:rgba(235,231,223,.88);display:none;place-items:center;font-size:18px;letter-spacing:.1em;color:var(--accent);pointer-events:none}
   body.dragging #drop{display:grid}
@@ -312,6 +317,15 @@
     <label class="btn small ghost" style="text-align:center">匯入設定（JSON）<input type="file" id="imJson" accept=".json,application/json" hidden></label>
     <button class="btn small ghost wide" id="exRevert" type="button">放棄草稿，回到檔案內容</button>
   </div>
+
+  <div class="lay-head"><h4>發佈到作品集網站</h4></div>
+  <p class="hint small">直接上傳到 GitHub 的 portfolio repo 並更新首頁清單，約一分鐘後網站更新。第一次要貼一把 GitHub token（只存在這台電腦的瀏覽器，不會進入匯出檔）。</p>
+  <label class="fld"><span>資料夾名稱（成為網址的一段；英數與連字號）</span><input id="fFolder" type="text" placeholder="例如 taichung-01" autocomplete="off"></label>
+  <label class="fld"><span>首頁卡片：案名</span><input id="fPubTitle" type="text"></label>
+  <label class="fld"><span>首頁卡片：一句說明</span><input id="fPubDesc" type="text"></label>
+  <label class="fld"><span>GitHub token（<a href="https://github.com/settings/tokens/new?scopes=repo&description=portfolio" target="_blank" rel="noopener">建立</a>：classic、勾 repo）</span><input id="fToken" type="password" placeholder="ghp_… 或 github_pat_…" autocomplete="off"></label>
+  <button class="btn small wide" id="pubBtn" type="button">發佈到網站</button>
+  <p class="hint small" id="pubStatus"></p>
 </div>
 
 <div id="drop"><div>放開以載入 .glb 模型</div></div>
@@ -333,7 +347,7 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 /* ════════════════════════════════════════════
    專案內容（由編輯面板維護；匯出時整段被取代）
    ════════════════════════════════════════════ */
-/*PROJECT-START*/const PROJECT_BAKED = {"id": "ln5j72oyyd", "brand": "建築細節導覽", "modelUrl": "", "homeUrl": "../", "northOffsetDeg": 0, "hero": {"eyebrow": "草屯貝加", "title": "從細節開始的建築", "sub": "向下滾動，看見設計裡被仔細安排的四件事。", "cam": {"pos": [-89.826, 41.384, -69.688], "target": [1.103, 40.442, 9.743]}, "layers": {}, "cut": null, "fov": null}, "scenes": [{"id": "opening", "short": "企業識別", "title": "圓弧立面語彙", "body": "凸顯企業識別，呈現穩重又不失無聊的立面細節", "effect": "none", "cam": {"pos": [-93.9, 25.978, -81.762], "target": [-11.569, 59.268, 15.633]}, "layers": {}, "cut": null, "fov": null}, {"id": "1hyuor1eo4", "short": "入口語彙", "title": "入口語彙", "body": "大氣磅礡", "effect": "none", "cam": {"pos": [-52.349, 23.549, -4.443], "target": [-35.901, 28.973, 15.973]}, "layers": {}, "cut": {"axis": "z", "dir": -1, "t": 0.68}, "fov": null}, {"id": "7jglqm64ll", "short": "入口大廳", "title": "入口大廳", "body": "挑高大氣", "effect": "none", "cam": {"pos": [-28.048, 26.037, -0.259], "target": [-28.26, 28.089, 16.406]}, "layers": {}, "cut": null, "fov": 80}, {"id": "1d7skzadmz", "short": "廠房內部", "title": "廠房", "body": "", "effect": "none", "cam": {"pos": [-32.538, 31.213, 17.165], "target": [10.793, 32.62, 9.387]}, "layers": {}, "cut": {"axis": "x", "dir": 1, "t": 0.38}, "fov": null}, {"id": "pipe", "short": "機器", "title": "機器等比例檢討", "body": "1:1 建置機器模型，確保空間足夠", "effect": "none", "cam": {"pos": [-35.767, 58.223, -23.974], "target": [1.761, 28.247, 3.25]}, "layers": {}, "cut": {"axis": "y", "dir": -1, "t": 0.38}, "fov": null}, {"id": "outlet", "short": "結構", "title": "碰撞檢討", "body": "使用 BIM 進行碰撞檢討，確保柱樑牆板皆符合建築法規規範與建築使用安全。", "effect": "structure", "cam": {"pos": [40.482, 68.112, -59.829], "target": [-7.506, 28.989, 1.554]}, "layers": {}, "cut": null, "fov": null}], "outro": {"title": "每一個細節，都為了生活", "sub": "", "cam": {"pos": [-125.898, 41.175, 79.242], "target": [5.107, 49.99, 7.86]}, "layers": {}, "cut": null, "fov": null}};/*PROJECT-END*/
+/*PROJECT-START*/const PROJECT_BAKED = {"id": "ln5j72oyyd", "brand": "建築細節導覽", "modelUrl": "", "homeUrl": "../", "northOffsetDeg": 0, "hero": {"eyebrow": "草屯貝加", "title": "從細節開始的建築", "sub": "向下滾動，看見設計裡被仔細安排的四件事。", "cam": {"pos": [-89.826, 41.384, -69.688], "target": [1.103, 40.442, 9.743]}, "layers": {}, "cut": null, "fov": null}, "scenes": [{"id": "opening", "short": "企業識別", "title": "圓弧立面語彙", "body": "凸顯企業識別，呈現穩重又不失無聊的立面細節", "effect": "none", "cam": {"pos": [-93.9, 25.978, -81.762], "target": [-11.569, 59.268, 15.633]}, "layers": {}, "cut": null, "fov": null}, {"id": "1hyuor1eo4", "short": "入口語彙", "title": "入口語彙", "body": "大氣磅礡", "effect": "none", "cam": {"pos": [-52.349, 23.549, -4.443], "target": [-35.901, 28.973, 15.973]}, "layers": {}, "cut": {"axis": "z", "dir": -1, "t": 0.68}, "fov": null}, {"id": "7jglqm64ll", "short": "入口大廳", "title": "入口大廳", "body": "挑高大氣", "effect": "none", "cam": {"pos": [-28.048, 26.037, -0.259], "target": [-28.26, 28.089, 16.406]}, "layers": {}, "cut": null, "fov": 80}, {"id": "1d7skzadmz", "short": "廠房內部", "title": "廠房", "body": "", "effect": "none", "cam": {"pos": [-32.538, 31.213, 17.165], "target": [10.793, 32.62, 9.387]}, "layers": {}, "cut": {"axis": "x", "dir": 1, "t": 0.38}, "fov": null}, {"id": "pipe", "short": "機器", "title": "機器等比例檢討", "body": "1:1 建置機器模型，確保空間足夠", "effect": "none", "cam": {"pos": [-35.767, 58.223, -23.974], "target": [1.761, 28.247, 3.25]}, "layers": {}, "cut": {"axis": "y", "dir": -1, "t": 0.38}, "fov": null}, {"id": "outlet", "short": "結構", "title": "碰撞檢討", "body": "使用 BIM 進行碰撞檢討，確保柱樑牆板皆符合建築法規規範與建築使用安全。", "effect": "structure", "cam": {"pos": [40.482, 68.112, -59.829], "target": [-7.506, 28.989, 1.554]}, "layers": {}, "cut": null, "fov": null}], "outro": {"title": "「價值，在每一個決策中匯聚」", "sub": "我們透過建築思維與數位技術，與您一同在建築未來的每個節點中做出正確決策。", "cam": {"pos": [-125.898, 41.175, 79.242], "target": [5.107, 49.99, 7.86]}, "layers": {}, "cut": null, "fov": null}};/*PROJECT-END*/
 /*MODE-START*/const EXPORTED = true;/*MODE-END*/   // 匯出的作品集為 true：預設隱藏工具，加 ?edit 才顯示
 
 // 依物件／圖層／材質名稱判斷分組（不分大小寫，包含即算）；效果樣式用
@@ -409,6 +423,7 @@ function normalizeProject(p) {
       effect: EFFECTS[s.effect] && s.effect !== 'frame' ? s.effect : 'none', ...view(s),
     })),
     outro: { title: String((p.outro || {}).title || ''), sub: String((p.outro || {}).sub || ''), ...view(p.outro) },
+    publish: { folder: String((p.publish || {}).folder || ''), title: String((p.publish || {}).title || ''), desc: String((p.publish || {}).desc || '') },
   };
   return out;
 }
@@ -1248,6 +1263,10 @@ function refreshFields() {
   $('fBrand').value = PROJECT.brand;
   $('fEyebrow').value = PROJECT.hero.eyebrow;
   $('fHome').value = PROJECT.homeUrl;
+  $('fFolder').value = PROJECT.publish.folder;
+  $('fPubTitle').value = PROJECT.publish.title;
+  $('fPubDesc').value = PROJECT.publish.desc;
+  $('fToken').value = loadToken();
   $('fHeroTitle').value = PROJECT.hero.title;
   $('fHeroSub').value = PROJECT.hero.sub;
   $('fOutroTitle').value = PROJECT.outro.title;
@@ -1276,6 +1295,9 @@ const bindText = (id, apply) => $(id).addEventListener('input', () => { apply($(
 bindText('fBrand', v => { PROJECT.brand = v; renderStatic(); });
 bindText('fEyebrow', v => { PROJECT.hero.eyebrow = v; renderStatic(); });
 bindText('fHome', v => { PROJECT.homeUrl = v.trim(); renderStatic(); });
+bindText('fFolder', v => { PROJECT.publish.folder = v.trim(); });
+bindText('fPubTitle', v => { PROJECT.publish.title = v; });
+bindText('fPubDesc', v => { PROJECT.publish.desc = v; });
 bindText('fHeroTitle', v => { PROJECT.hero.title = v; renderStatic(); });
 bindText('fHeroSub', v => { PROJECT.hero.sub = v; renderStatic(); });
 bindText('fOutroTitle', v => { PROJECT.outro.title = v; renderStatic(); });
@@ -1514,8 +1536,7 @@ function bytesToB64(buf) {
 // 以 JSON 寫進 script 標籤時，避免字串裡出現 script 結束標籤或 U+2028/2029 破壞語法（本檔內任何地方都不能出現字面上的 script 結束標籤）
 const jsSafe = s => s.split('</').join('<\\/').split(String.fromCharCode(0x2028)).join('\\u2028').split(String.fromCharCode(0x2029)).join('\\u2029');
 
-$('exHtml').addEventListener('click', () => {
-  if (isDemo) { toast('請先載入模型再匯出'); return; }
+function buildExport() {
   const proj = clone(PROJECT);
   proj.id = uid();          // 匯出的檔案是新的專案，草稿不互相干擾
   proj.modelUrl = '';       // 匯出檔只用內嵌模型
@@ -1525,9 +1546,85 @@ $('exHtml').addEventListener('click', () => {
   const embed = modelBytes ? `<script id="embed">window.EMBEDDED_GLB=${jsSafe(JSON.stringify({ name: modelName, b64: bytesToB64(modelBytes) }))};<\/script>` : '<script id="embed"><\/script>';
   html = html.replace(/<script id="embed"[^>]*>[\s\S]*?<\/script>/, () => embed);
   html = html.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${PROJECT.brand.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</title>`);
+  return html;
+}
+$('exHtml').addEventListener('click', () => {
+  if (isDemo) { toast('請先載入模型再匯出'); return; }
+  const html = buildExport();
   download(safeName(PROJECT.brand) + '.html', new Blob([html], { type: 'text/html' }));
   toast('已匯出作品集 HTML（約 ' + Math.round(html.length / 1048576) + ' MB）');
 });
+
+/* ── 發佈到作品集網站（GitHub Contents API） ── */
+const PUBLISH = { repo: '44313-architects/portfolio', branch: 'main', site: 'https://44313-architects.github.io/portfolio/' };
+const tokenKey = 'arch-portfolio:gh-token';
+const loadToken = () => { try { return localStorage.getItem(tokenKey) || ''; } catch (e) { return ''; } };
+const utf8ToB64 = str => bytesToB64(new TextEncoder().encode(str).buffer);
+const b64ToUtf8 = b64 => { const bin = atob(b64.replace(/\s/g, '')); const u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new TextDecoder().decode(u8); };
+const pubStatus = (msg, link) => {
+  const el = $('pubStatus');
+  el.textContent = msg;
+  if (link) { const a = document.createElement('a'); a.href = link; a.target = '_blank'; a.rel = 'noopener'; a.textContent = link; el.append('\n', a); }
+};
+async function gh(path, opt = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    ...opt,
+    headers: { Authorization: 'Bearer ' + loadToken(), Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opt.headers || {}) },
+  });
+  let data = null;
+  try { data = await res.json(); } catch (e) { /* 沒有內容 */ }
+  if (!res.ok) {
+    const why = res.status === 401 ? 'token 無效或已過期' : res.status === 403 ? '沒有權限（token 要能寫入這個 repo）' : res.status === 404 ? '找不到（repo 名稱或 token 權限）' : (data && data.message) || res.status;
+    throw new Error(`GitHub 回應 ${res.status}：${why}`);
+  }
+  return data;
+}
+// 首頁 index.html 的 PROJECTS 清單：新增或更新一行
+function upsertLanding(src, folder, title, desc) {
+  const q = v => "'" + String(v).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+  const line = `  { folder: ${q(folder)}, title: ${q(title)}, desc: ${q(desc)} },`;
+  const re = new RegExp(`^[ \\t]*\\{\\s*folder:\\s*'${folder.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'.*$`, 'm');
+  if (re.test(src)) return src.replace(re, line);
+  const end = src.indexOf('\n];', src.indexOf('const PROJECTS = ['));
+  if (end < 0) throw new Error('首頁 index.html 裡找不到 PROJECTS 清單');
+  return src.slice(0, end) + '\n' + line + src.slice(end);
+}
+async function publishToSite() {
+  const pub = PROJECT.publish;
+  if (isDemo) { toast('請先載入模型'); return; }
+  if (!/^[a-z0-9][a-z0-9-]*$/i.test(pub.folder)) { pubStatus('資料夾名稱只能用英數與連字號，例如 taichung-01'); return; }
+  if (!loadToken()) { pubStatus('請先貼上 GitHub token'); return; }
+  const title = pub.title || PROJECT.hero.eyebrow || PROJECT.brand;
+  const btn = $('pubBtn');
+  btn.disabled = true;
+  try {
+    pubStatus('準備檔案…');
+    await new Promise(r => setTimeout(r, 30));
+    const html = buildExport();
+    const mb = html.length / 1048576;
+    if (mb > 70) throw new Error(`檔案約 ${Math.round(mb)} MB，超過 GitHub API 能上傳的大小（約 70 MB），請用「匯出作品集」再以 git 上傳`);
+    pubStatus('讀取 repo…');
+    const tree = await gh(`/repos/${PUBLISH.repo}/git/trees/${PUBLISH.branch}?recursive=1`);
+    const shaOf = path => { const n = (tree.tree || []).find(t => t.path === path); return n ? n.sha : undefined; };
+    const path = `${pub.folder}/index.html`;
+    const existed = !!shaOf(path);
+    pubStatus(`上傳作品集（約 ${Math.round(mb)} MB）…`);
+    await gh(`/repos/${PUBLISH.repo}/contents/${path}`, { method: 'PUT', body: JSON.stringify({ message: `${existed ? '更新' : '新增'}作品集：${title}（${pub.folder}）`, content: utf8ToB64(html), branch: PUBLISH.branch, sha: shaOf(path) }) });
+    pubStatus('更新首頁清單…');
+    const landing = await gh(`/repos/${PUBLISH.repo}/contents/index.html?ref=${PUBLISH.branch}`);
+    const src = b64ToUtf8(landing.content);
+    const next = upsertLanding(src, pub.folder, title, pub.desc);
+    if (next !== src) await gh(`/repos/${PUBLISH.repo}/contents/index.html`, { method: 'PUT', body: JSON.stringify({ message: `首頁清單：${title}`, content: utf8ToB64(next), branch: PUBLISH.branch, sha: landing.sha }) });
+    const url = PUBLISH.site + pub.folder + '/';
+    pubStatus(`已${existed ? '更新' : '新增'}，約一分鐘後生效：`, url);
+    toast('發佈完成');
+  } catch (e) {
+    console.error(e);
+    pubStatus('發佈失敗：' + e.message);
+  } finally { btn.disabled = false; }
+}
+$('pubBtn').addEventListener('click', publishToSite);
+$('fToken').addEventListener('change', () => { try { localStorage.setItem(tokenKey, $('fToken').value.trim()); } catch (e) { /* 略過 */ } });
 $('exJson').addEventListener('click', () => {
   download(safeName(PROJECT.brand) + '.json', new Blob([JSON.stringify(PROJECT, null, 2)], { type: 'application/json' }));
   toast('已匯出設定 JSON');
