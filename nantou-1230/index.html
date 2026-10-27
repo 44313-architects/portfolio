@@ -20,7 +20,7 @@
 -->
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>建築細節導覽</title>
+<title>南投名間 住宅｜建築細節導覽</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500&family=Noto+Serif+TC:wght@500;600&display=swap" rel="stylesheet">
@@ -266,8 +266,8 @@
   </div>
 
   <div class="f f-hero">
-    <label class="fld"><span>品牌／作品集名稱</span><input id="fBrand" type="text"></label>
-    <label class="fld"><span>案名（標題上方小字）</span><input id="fEyebrow" type="text"></label>
+    <label class="fld"><span>案名（工具列標誌旁、標題上方小字）</span><input id="fEyebrow" type="text"></label>
+    <label class="fld"><span>品牌／作品集名稱（視窗標題與匯出檔名）</span><input id="fBrand" type="text"></label>
     <label class="fld"><span>左上標誌連結（首頁網址；留空＝回到最上面）</span><input id="fHome" type="text" placeholder="../"></label>
     <label class="fld"><span>標題</span><textarea id="fHeroTitle" rows="2"></textarea></label>
     <label class="fld"><span>副標</span><textarea id="fHeroSub" rows="2"></textarea></label>
@@ -464,8 +464,8 @@ if (EXPORTED ? !params.has('edit') : params.has('present')) body.classList.add('
 
 let cardEls = [], navEls = [];
 function renderStatic() {
-  $('brandText').textContent = PROJECT.brand;
-  document.title = PROJECT.brand || '建築細節導覽';
+  $('brandText').textContent = PROJECT.hero.eyebrow || PROJECT.brand;   // 工具列顯示案名，沒填才退回品牌名
+  document.title = PROJECT.hero.eyebrow ? `${PROJECT.hero.eyebrow}｜${PROJECT.brand || '建築細節導覽'}` : (PROJECT.brand || '建築細節導覽');
   $('homeLink').href = PROJECT.homeUrl || '#';
   $('homeBtn').href = PROJECT.homeUrl || '#';
   document.querySelector('.outro-actions').classList.toggle('no-home', !PROJECT.homeUrl);
@@ -1545,7 +1545,7 @@ function buildExport() {
   html = html.replace(/\/\*MODE-START\*\/[\s\S]*?\/\*MODE-END\*\//, '/*MODE-START*/const EXPORTED = true;/*MODE-END*/');
   const embed = modelBytes ? `<script id="embed">window.EMBEDDED_GLB=${jsSafe(JSON.stringify({ name: modelName, b64: bytesToB64(modelBytes) }))};<\/script>` : '<script id="embed"><\/script>';
   html = html.replace(/<script id="embed"[^>]*>[\s\S]*?<\/script>/, () => embed);
-  html = html.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${PROJECT.brand.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</title>`);
+  html = html.replace(/<title>[\s\S]*?<\/title>/, () => `<title>${document.title.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]))}</title>`);
   return html;
 }
 $('exHtml').addEventListener('click', () => {
